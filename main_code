@@ -1,0 +1,48 @@
+import cv2
+import os
+import shutil
+import numpy as np
+
+def is_thermal_image(image_path):
+    img = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    if img is None:
+        return False
+
+    mean_intensity = np.mean(img)
+    std_intensity = np.std(img)
+
+    if std_intensity < 30 and mean_intensity > 50:
+        return True
+    return False
+
+def organize_images(folder_path):
+    # Define the main output folder
+    organize_folder = os.path.join(folder_path, "organize_data")
+    thermal_folder = os.path.join(organize_folder, "thermal")
+    visible_folder = os.path.join(organize_folder, "visible")
+
+    # Create the directories if they don’t already exist
+    os.makedirs(thermal_folder, exist_ok=True)
+    os.makedirs(visible_folder, exist_ok=True)
+
+    # Process each image in the input folder
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+
+        # Ignore non-image files
+        if not os.path.isfile(file_path):
+            continue
+
+        # Classify the image and move it to the appropriate folder
+        if is_thermal_image(file_path):
+            shutil.move(file_path, os.path.join(thermal_folder, filename))
+        else:
+            shutil.move(file_path, os.path.join(visible_folder, filename))
+
+    print(f"Images have been organized into '{organize_folder}' with 'thermal' and 'visible' subfolders.")
+
+# Example usage
+folder_path = '/Users/lokeshdas/Desktop/SuperResolutionData/HadronCaptureFailed'  # Replace with your path
+# folder_path = 'C:\\Users\\YourUsername\\Desktop\\FolderName'  # For Windows
+
+organize_images(folder_path)
